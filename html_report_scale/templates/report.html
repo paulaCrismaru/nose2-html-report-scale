@@ -29,15 +29,23 @@
                         <div class="col s12">
                             <ul>
                                {% set test_results = {'total': 0, 'pass':0 , 'fail':0} %}
+                                {% if data %}
                                 {% for test_name, results in data %}
                                     {% if test_results.update({'total': test_results.total + results.True + results.False}) %} {% endif %}
                                     {% if test_results.update({'pass': test_results.pass + results.True}) %} {% endif %}
                                     {% if test_results.update({'fail': test_results.fail + results.False}) %} {% endif %}
                                 {% endfor %}
+                                {% endif %}
                                 <li><strong>Total Tests</strong>: {{ test_results.total }}</li>
                                 <li><strong>Total Pass</strong>: {{ test_results.pass }}</li>
                                 <li><strong>Total Fail</strong>: {{ test_results.fail }}</li>
-                                <li><strong>Total Pass %</strong>: {{ test_results.pass * 100 / test_results.total }}%</li>
+                                <li><strong>Total Pass %</strong>:
+                                    {% if test_results.total > 0 %}
+                                    {{ test_results.pass * 100 / test_results.total }}%
+                                    {% else %}
+                                    0%
+                                    {% endif %}
+                                </li>
                             </ul>
                         </div>
                     </div>

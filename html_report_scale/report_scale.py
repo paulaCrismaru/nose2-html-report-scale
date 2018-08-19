@@ -6,8 +6,6 @@ from nose2.events import Plugin
 
 from render import render
 
-FILE_PATH = os.path.realpath('report.html')
-
 
 class ScaleReport(Plugin):
     configSection = 'report-scale'
@@ -15,7 +13,7 @@ class ScaleReport(Plugin):
 
     def __init__(self,*args,**kwargs):
         super(ScaleReport, self).__init__(*args, **kwargs)
-        config_file = os.path.realpath(self.config.as_str("path", default="report.html"))
+        self.report_path = os.path.realpath(self.config.as_str("path", default="report.html"))
 
     def testOutcome(self, event):
         test_name = event.test.__repr__().split('.')[-1]
@@ -73,5 +71,5 @@ class ScaleReport(Plugin):
                 # for value, traceback in results["failures"]:
                 #     data += '{}\n{}'.format(value, traceback)
                     # print traceback
-        render(FILE_PATH, {"data": tests_data,
+        render(self.report_path, {"data": tests_data,
                            "test_report_title": "my title"})

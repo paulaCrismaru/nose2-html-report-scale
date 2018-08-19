@@ -1,19 +1,19 @@
-import logging
 import os
 import traceback
 
 from nose2.events import Plugin
 
-from render import render
+from html_report_scale.render import render
 
 
 class ScaleReport(Plugin):
     configSection = 'report-scale'
     tests_results = {}
 
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         super(ScaleReport, self).__init__(*args, **kwargs)
-        self.report_path = os.path.realpath(self.config.as_str("path", default="report.html"))
+        self.report_path = os.path.realpath(
+            self.config.as_str("path", default="report.html"))
         report_title = self.config.as_str("report_title", "")
         if report_title:
             self.report_title = "Test results: {}".format(report_title)
@@ -57,19 +57,12 @@ class ScaleReport(Plugin):
         key = "False" if "passed" not in event.outcome else "True"
         self.tests_results[test_name][key] += 1
 
-    def afterTestRun(self, *args, **kwargs):
-        print "afterTestRun"
-
     def afterSummaryReport(self, event):
-        print "after summary report"
-        # import pdb; pdb.set_trace()
         tests_data = []
         for test_name, results in self.tests_results.items():
             tests_data.append((test_name, results))
-            # if "failures" in results:
-                # data += "Input values of failures:\n"
-                # for value, traceback in results["failures"]:
-                #     data += '{}\n{}'.format(value, traceback)
-                    # print traceback
-        render(self.report_path, {"data": tests_data,
-                                  "test_report_title": self.report_title})
+        data = {
+            "data": tests_data,
+            "test_report_title": self.report_title
+        }
+        render(self.report_path, data)

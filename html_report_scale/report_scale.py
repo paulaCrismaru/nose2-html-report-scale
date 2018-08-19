@@ -19,6 +19,8 @@ class ScaleReport(Plugin):
             self.report_title = "Test results: {}".format(report_title)
         else:
             self.report_title = "Test results"
+        self.display_test_parameters = self.config.as_str(
+            "display_test_parameters", default=False)
 
     def testOutcome(self, event):
         test_name = event.test.__repr__().split('.')[-1]
@@ -63,6 +65,7 @@ class ScaleReport(Plugin):
             tests_data.append((test_name, results))
         data = {
             "data": tests_data,
-            "test_report_title": self.report_title
+            "test_report_title": self.report_title,
+            "display_test_parameters": self.display_test_parameters
         }
         render(self.report_path, data)

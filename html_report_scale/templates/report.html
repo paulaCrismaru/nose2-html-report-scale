@@ -147,7 +147,11 @@
                                     <ul class="collapsible" data-collapsible="accordian">
                                         <li>
                                         <div class="collapsible-header">
+                                            {% if display_test_parameters %}
                                             <strong>Test parameters: {{ value }}</strong>
+                                            {% else %}
+                                            <strong>Test</strong>
+                                            {% endif %}
                                         </div>
                                         <div class="collapsible-body">
                                             <code><pre>{{ traceback }}</pre></code>

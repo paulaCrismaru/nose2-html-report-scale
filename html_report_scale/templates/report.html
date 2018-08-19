@@ -14,6 +14,10 @@
         </style>
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     </head>
     <body>
         <div class="container">
@@ -39,12 +43,17 @@
                                 <li><strong>Total Tests</strong>: {{ test_results.total }}</li>
                                 <li><strong>Total Pass</strong>: {{ test_results.pass }}</li>
                                 <li><strong>Total Fail</strong>: {{ test_results.fail }}</li>
-                                <li><strong>Total Pass %</strong>:
+                                <li>
+                                    <div class="progress">
                                     {% if test_results.total > 0 %}
-                                    {{ test_results.pass * 100 / test_results.total }}%
-                                    {% else %}
-                                    0%
+                                          <div class="progress-bar bg-success" style="width:{{ test_results.pass * 100 / test_results.total }}%">
+                                            PASS
+                                          </div>
+                                          <div class="progress-bar bg-danger" style="width:{{ test_results.fail * 100 / test_results.total }}%">
+                                            FAIL
+                                          </div>
                                     {% endif %}
+                                    </div>
                                 </li>
                             </ul>
                         </div>
@@ -60,7 +69,7 @@
                               <th>Total</th>
                               <th>Pass</th>
                               <th>Fail</th>
-                              <th>Pass %</th>
+                              <th>Summary</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -70,7 +79,16 @@
                             <td>{{ [results.True, results.False]|sum }}</td>
                             <td>{{ results.True }}</td>
                             <td>{{ results.False }}</td>
-                            <td>{{ results.True * 100 / [results.True, results.False]|sum }} %</td>
+                              <td>
+                                  <div class="progress">
+                                      <div class="progress-bar bg-success" style="width:{{ results.True * 100 / [results.True, results.False]|sum }}%">
+                                        {{ results.True * 100 / [results.True, results.False]|sum }}%
+                                      </div>
+                                      <div class="progress-bar bg-danger" style="width:{{ results.False * 100 / [results.True, results.False]|sum }}%">
+                                        {{ results.False * 100 / [results.True, results.False]|sum }}%
+                                      </div>
+                                    </div>
+                              </td>
                           </tr>
                         {% endfor %}
                         </tbody>

@@ -25,24 +25,19 @@ class ScaleReport(Plugin):
         if "obj" in dir(event.test):
             # TODO: add better check
             documentation = getattr(event.test.obj, test_name).__doc__
+        else:
+            # TODO: add better check for generator
+            test_name = test_name.split(":")[0]
+            test_self = event.test._testFunc.func_defaults[0]
+            test_class = test_self.im_class
+            documentation = getattr(test_class, test_name).__doc__
+        if test_name not in self.tests_results:
             self.tests_results[test_name] = {
                 "description": documentation,
                 "True": 0,
                 "False": 0,
                 "failures": []
             }
-        else:
-            # TODO: add better check for generator
-            test_name = test_name.split(":")[0]
-            # print "*"
-            # print event.test
-            if test_name not in self.tests_results:
-                self.tests_results[test_name] = {
-                    "description": "bla",
-                    "True": 0,
-                    "False": 0,
-                    "failures": []
-                }
         if "passed" not in event.outcome:
             exception_type = event.exc_info[0]
             exception_message = event.exc_info[1]

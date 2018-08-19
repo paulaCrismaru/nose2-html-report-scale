@@ -14,6 +14,11 @@ class ScaleReport(Plugin):
     def __init__(self,*args,**kwargs):
         super(ScaleReport, self).__init__(*args, **kwargs)
         self.report_path = os.path.realpath(self.config.as_str("path", default="report.html"))
+        report_title = self.config.as_str("report_title", "")
+        if report_title:
+            self.report_title = "Test results: {}".format(report_title)
+        else:
+            self.report_title = "Test results"
 
     def testOutcome(self, event):
         test_name = event.test.__repr__().split('.')[-1]
@@ -72,4 +77,4 @@ class ScaleReport(Plugin):
                 #     data += '{}\n{}'.format(value, traceback)
                     # print traceback
         render(self.report_path, {"data": tests_data,
-                           "test_report_title": "my title"})
+                                  "test_report_title": self.report_title})

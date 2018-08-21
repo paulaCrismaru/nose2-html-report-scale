@@ -23,7 +23,8 @@ class ScaleReport(Plugin):
             "display_test_parameters", default=False)
 
     def testOutcome(self, event):
-        test_name = event.test.__repr__().split('.')[-1]
+        test_method = event.test.__repr__().split(":")[0]
+        test_name = test_method.split(".")[-1]
         if "obj" in dir(event.test):
             # TODO: add better check
             documentation = getattr(event.test.obj, test_name).__doc__
@@ -31,8 +32,10 @@ class ScaleReport(Plugin):
             # TODO: add better check for generator
             test_name = test_name.split(":")[0]
             test_self = event.test._testFunc.func_defaults[0]
-            test_class = test_self.im_class
-            documentation = getattr(test_class, test_name).__doc__
+            documentation = None
+            if hasattr(test_self, "im_class"):
+                test_class = test_self.im_class
+                documentation = getattr(test_class, test_name).__doc__
         if test_name not in self.tests_results:
             self.tests_results[test_name] = {
                 "description": documentation,

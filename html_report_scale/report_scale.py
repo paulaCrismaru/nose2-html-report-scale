@@ -2,8 +2,8 @@ import os
 import traceback
 
 from nose2.events import Plugin
-
 from html_report_scale.render import render
+from unittest import FunctionTestCase
 
 
 class ScaleReport(Plugin):
@@ -23,19 +23,23 @@ class ScaleReport(Plugin):
             "display_test_parameters", default=False)
 
     def testOutcome(self, event):
-        test_method = event.test.__repr__().split(":")[0]
-        test_name = test_method.split(".")[-1]
-        if "obj" in dir(event.test):
-            # TODO: add better check
-            documentation = getattr(event.test.obj, test_name).__doc__
+        if isinstance(event.test, FunctionTestCase):
+            test_name = event.test._testFunc.func_name
+            documentation = event.test._testFunc.func_doc
         else:
-            # TODO: add better check for generator
-            test_name = test_name.split(":")[0]
-            test_self = event.test._testFunc.func_defaults[0]
-            documentation = None
-            if hasattr(test_self, "im_class"):
-                test_class = test_self.im_class
-                documentation = getattr(test_class, test_name).__doc__
+            test_method = event.test.__repr__().split(":")[0]
+            test_name = test_method.split(".")[-1]
+            if "obj" in dir(event.test):
+                # TODO: add better check
+                documentation = getattr(event.test.obj, test_name).__doc__
+            else:
+                # TODO: add better check for generator
+                test_name = test_name.split(":")[0]
+                test_self = event.test._testFunc.func_defaults[0]
+                documentation = None
+                if hasattr(test_self, "im_class"):
+                    test_class = test_self.im_class
+                    documentation = getattr(test_class, test_name).__doc__
         if test_name not in self.tests_results:
             self.tests_results[test_name] = {
                 "description": documentation,

@@ -2,6 +2,8 @@ import os
 import traceback
 
 from nose2.events import Plugin
+from nose2.exceptions import LoadTestsFailure
+from nose2.plugins.loader.testclasses import MethodTestCase
 from nose2.plugins.loader.generators import GeneratorFunctionCase
 from html_report_scale.render import render
 from unittest import FunctionTestCase
@@ -25,7 +27,11 @@ class ScaleReport(Plugin):
 
     def testOutcome(self, event):
         test_class_name = None
-        if isinstance(event.test, GeneratorFunctionCase):
+        if event.test.__class__.__name__=='LoadTestsFailure':
+            # TODO: find better
+            test_name = None
+            documentation = "adsdadadadadasda2123ewq"
+        elif isinstance(event.test, GeneratorFunctionCase):
             # generator function in class
             test_name = event.test._funcName.split(":")[0]
             test_name = test_name.split(".")[-1]
@@ -46,9 +52,9 @@ class ScaleReport(Plugin):
                 if test_method.count(".") > 1 else None
             test_name = test_method.split(".")[-1]
             documentation = getattr(event.test.obj, test_name).__doc__
-        if test_name not in self.tests_results:
-            if test_class_name is not None:
-                test_name = ".".join([test_class_name, test_name])
+        if test_class_name is not None:
+            test_name = ".".join([test_class_name, test_name])
+        if test_name and test_name not in self.tests_results:
             self.tests_results[test_name] = {
                 "description": documentation,
                 "True": 0,
@@ -68,11 +74,13 @@ class ScaleReport(Plugin):
                     (passed_parameters, formatted_traceback)
                 )
             else:
-                self.tests_results[test_name]["failures"].append(
-                    (passed_parameters, formatted_traceback)
-                )
+                if test_name:
+                    self.tests_results[test_name]["failures"].append(
+                        (passed_parameters, formatted_traceback)
+                    )
         key = "False" if "passed" not in event.outcome else "True"
-        self.tests_results[test_name][key] += 1
+        if test_name:
+            self.tests_results[test_name][key] += 1
 
     def afterSummaryReport(self, event):
         tests_data = []

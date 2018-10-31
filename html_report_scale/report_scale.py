@@ -2,6 +2,7 @@ import os
 import traceback
 
 from nose2.events import Plugin
+from nose2.plugins.loader.generators import GeneratorFunctionCase
 from html_report_scale.render import render
 from unittest import FunctionTestCase
 
@@ -23,24 +24,31 @@ class ScaleReport(Plugin):
             "display_test_parameters", default=False)
 
     def testOutcome(self, event):
-        if isinstance(event.test, FunctionTestCase):
+        test_class_name = None
+        if isinstance(event.test, GeneratorFunctionCase):
+            # generator function in class
+            test_name = event.test._funcName.split(":")[0]
+            test_name = test_name.split(".")[-1]
+            test_self = event.test._testFunc.func_defaults[0]
+            documentation = None
+            if hasattr(test_self, "im_class"):
+                test_class = test_self.im_class
+                documentation = getattr(test_class, test_name).__doc__
+                test_class_name = test_class.__name__
+        elif isinstance(event.test, FunctionTestCase):
+            # standalone function in module
             test_name = event.test._testFunc.func_name
             documentation = event.test._testFunc.func_doc
         else:
-            test_method = event.test.__repr__().split(":")[0]
+            # function in class
+            test_method = event.test._name.split(":")[0]
+            test_class_name = ".".join(test_method.split(".")[-2:]) \
+                if test_method.count(".") > 1 else None
             test_name = test_method.split(".")[-1]
-            if "obj" in dir(event.test):
-                # TODO: add better check
-                documentation = getattr(event.test.obj, test_name).__doc__
-            else:
-                # TODO: add better check for generator
-                test_name = test_name.split(":")[0]
-                test_self = event.test._testFunc.func_defaults[0]
-                documentation = None
-                if hasattr(test_self, "im_class"):
-                    test_class = test_self.im_class
-                    documentation = getattr(test_class, test_name).__doc__
+            documentation = getattr(event.test.obj, test_name).__doc__
         if test_name not in self.tests_results:
+            if test_class_name is not None:
+                test_name = ".".join([test_class_name, test_name])
             self.tests_results[test_name] = {
                 "description": documentation,
                 "True": 0,

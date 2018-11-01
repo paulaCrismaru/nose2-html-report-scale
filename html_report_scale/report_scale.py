@@ -2,7 +2,6 @@ import os
 import traceback
 
 from nose2.events import Plugin
-from nose2.exceptions import LoadTestsFailure
 from nose2.plugins.loader.testclasses import MethodTestCase
 from nose2.plugins.loader.generators import GeneratorFunctionCase
 from html_report_scale.render import render
@@ -27,20 +26,21 @@ class ScaleReport(Plugin):
 
     def testOutcome(self, event):
         test_class_name = None
-        if event.test.__class__.__name__=='LoadTestsFailure':
+        if event.test.__class__.__name__ == 'LoadTestsFailure':
             # TODO: find better
             test_name = None
-            documentation = "adsdadadadadasda2123ewq"
+            documentation = None
         elif isinstance(event.test, GeneratorFunctionCase):
             # generator function in class
-            test_name = event.test._funcName.split(":")[0]
-            test_name = test_name.split(".")[-1]
+            test_method = event.test._funcName.split(":")[0]
+            test_name = test_method.split(".")[-1]
             test_self = event.test._testFunc.func_defaults[0]
+            test_class_name = test_method.split(".")[-2] \
+                if test_method.count(".") > 1 else None
             documentation = None
             if hasattr(test_self, "im_class"):
                 test_class = test_self.im_class
                 documentation = getattr(test_class, test_name).__doc__
-                test_class_name = test_class.__name__
         elif isinstance(event.test, FunctionTestCase):
             # standalone function in module
             test_name = event.test._testFunc.func_name
@@ -48,7 +48,7 @@ class ScaleReport(Plugin):
         else:
             # function in class
             test_method = event.test._name.split(":")[0]
-            test_class_name = ".".join(test_method.split(".")[-2:]) \
+            test_class_name = test_method.split(".")[-2] \
                 if test_method.count(".") > 1 else None
             test_name = test_method.split(".")[-1]
             documentation = getattr(event.test.obj, test_name).__doc__
